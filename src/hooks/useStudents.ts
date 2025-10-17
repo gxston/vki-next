@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type StudentInterface from '@/types/StudentInterface';
-import { getStudentsApi, deleteStudentsApi } from '@/api/studentsApi';
+import { getStudentsApi, deleteStudentsApi, addStudentApi } from '@/api/studentsApi';
 
 interface StudentsHookInterface {
   students: StudentInterface[];
   deleteStudentMutate: (studentId: number) => void;
+  addStudentMutate: (student: StudentInterface) => void;
 }
 
 const useStudents = (): StudentsHookInterface => {
@@ -50,9 +51,41 @@ const useStudents = (): StudentsHookInterface => {
      },
   });
 
+  const addStudentMutate = useMutation({
+    mutationFn: async (student: StudentInterface) => addStudentApi(student),
+    onMutate: async (student: StudentInterface) => {
+      await queryClient.cancelQueries({ queryKey: ['students'] });
+      const previousStudents = queryClient.getQueryData<StudentInterface[]>(['students']);
+
+      let updatedStudents = [...(previousStudents ?? [])];
+
+      if (!updatedStudents) return;
+
+      updatedStudents = [...updatedStudents, student];
+
+      queryClient.setQueryData<StudentInterface[]>(['students'], updatedStudents);
+
+      return { previousStudents, updatedStudents };
+    },
+    onError: (err, variables, context) => {
+      console.log('addStudentMutate err', err);
+      queryClient.setQueryData<StudentInterface[]>(['students'], context?.previousStudents);
+    },
+    onSuccess: async (student, variable, { updatedStudents }) => {
+      await queryClient.cancelQueries({ queryKey: ['students'] });
+
+      if (!updatedStudents) {
+        return;
+      }
+
+      queryClient.setQueryData<StudentInterface[]>(['students'], updatedStudents);
+     },
+  });
+
   return {
     students: data ?? [],
     deleteStudentMutate: deleteStudentMutate.mutate,
+    addStudentMutate: addStudentMutate.mutate,
   };
 };
 

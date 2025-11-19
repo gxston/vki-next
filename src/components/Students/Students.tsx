@@ -3,38 +3,59 @@
 import useStudents from '@/hooks/useStudents';
 import type StudentInterface from '@/types/StudentInterface';
 import styles from './Students.module.scss';
-import Student from './Student';
-import { useState } from 'react';
-import AddStudent from '../AddStudent/AddStudent';
+import Student from './Student/Student';
+import AddStudent, { type FormFields } from './AddStudent/AddStudent';
+import { v4 as uuidv4 } from 'uuid';
+import useGroups from '@/hooks/useGroups';
 
 const Students = (): React.ReactElement => {
-  const { students, deleteStudentMutate, addStudentMutate } = useStudents();
-  
-  const onDeleteHandler = (id: number): void => {
-    deleteStudentMutate(id);
+  const {
+    students,
+    deleteStudentMutate,
+    addStudentMutate,
+  } = useStudents();
+
+  const { groups } = useGroups();
+
+  /**
+   * Удаление студента - обработчик события нажатия "удалить"
+   * @param studentId Ид студента
+   */
+  const onDeleteHandler = (studentId: number): void => {
+    if (confirm('Удалить студента?')) {
+      console.log('onDeleteHandler', studentId);
+      debugger;
+
+      deleteStudentMutate(studentId);
+    }
   };
 
-  const onSubmitHandler = (student: StudentInterface): void => {
-    addStudentMutate(student);
-  };
+  /**
+   * Добавления студента - обработчик события нажатия "добавить"
+   * @param studentFormField Форма студента
+   */
+  const onAddHandler = (studentFormField: FormFields): void => {
+    console.log('Добавление студента', studentFormField);
+    debugger;
 
-  const [isAddOpen, setIsAddOpen] = useState(false);
-
-  const handleClick = () => {
-    setIsAddOpen(true);
+    addStudentMutate({
+      id: -1,
+      ...studentFormField,
+      uuid: uuidv4(),
+    });
   };
 
   return (
     <div className={styles.Students}>
-      {students.map((student: StudentInterface, index) => (
-        <Student
-          key={index}
-          student={student}
-          onDelete={onDeleteHandler}/>
-      ))}
+      <AddStudent onAdd={onAddHandler} groups={groups} />
 
-      <button onClick={handleClick}>Добавить студента</button>
-      {isAddOpen && <AddStudent onSubmit={onSubmitHandler}/>}
+      {students.map((student: StudentInterface) => (
+        <Student
+          key={student.id || student.uuid}
+          student={student}
+          onDelete={onDeleteHandler}
+        />
+      ))}
     </div>
   );
 };

@@ -10,7 +10,7 @@ export async function DELETE(
 
   const deletedStudentId = await deleteStudentDb(studentId);
   
-  return new Response(JSON.stringify(deletedStudentId), {
+  return new Response(JSON.stringify({ deletedStudentId }), {
     headers: {
       'Content-Type': 'application/json',
     },

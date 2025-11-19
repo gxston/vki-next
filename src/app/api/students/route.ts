@@ -15,10 +15,11 @@ export async function POST(req: NextApiRequest): Promise<Response> {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const student = await req.json();
-
+  delete student['id'];
   const newStudent = await addStudentDb(student);
 
   return new Response(JSON.stringify(newStudent), {
+    status: 201,
     headers: {
       'Content-Type': 'application/json',
     },

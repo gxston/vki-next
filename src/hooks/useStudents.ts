@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type StudentInterface from '@/types/StudentInterface';
-import { getStudentsApi, deleteStudentsApi, addStudentApi } from '@/api/studentsApi';
+import { getStudentsApi, deleteStudentApi, addStudentApi } from '@/api/studentsApi';
 
 interface StudentsHookInterface {
   students: StudentInterface[];
@@ -11,14 +11,14 @@ interface StudentsHookInterface {
 const useStudents = (): StudentsHookInterface => {
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const { data, refetch } = useQuery({
     queryKey: ['students'],
     queryFn: () => getStudentsApi(),
-    enabled: false,
+    enabled: true,
   });
 
   const deleteStudentMutate = useMutation({
-    mutationFn: async (studentId: number) => deleteStudentsApi(studentId),
+    mutationFn: async (studentId: number) => deleteStudentApi(studentId),
     onMutate: async (studentId: number) => {
       await queryClient.cancelQueries({ queryKey: ['students'] });
       const previousStudents = queryClient.getQueryData<StudentInterface[]>(['students']);
@@ -53,6 +53,7 @@ const useStudents = (): StudentsHookInterface => {
 
   const addStudentMutate = useMutation({
     mutationFn: async (student: StudentInterface) => addStudentApi(student),
+
     onMutate: async (student: StudentInterface) => {
       await queryClient.cancelQueries({ queryKey: ['students'] });
       const previousStudents = queryClient.getQueryData<StudentInterface[]>(['students']);
@@ -61,24 +62,35 @@ const useStudents = (): StudentsHookInterface => {
 
       if (!updatedStudents) return;
 
-      updatedStudents = [...updatedStudents, student];
+      updatedStudents.push({
+        ...student,
+        isNew: true,
+      });
 
       queryClient.setQueryData<StudentInterface[]>(['students'], updatedStudents);
 
       return { previousStudents, updatedStudents };
     },
+
     onError: (err, variables, context) => {
       console.log('addStudentMutate err', err);
       queryClient.setQueryData<StudentInterface[]>(['students'], context?.previousStudents);
     },
-    onSuccess: async (student, variable, { updatedStudents }) => {
-      await queryClient.cancelQueries({ queryKey: ['students'] });
 
-      if (!updatedStudents) {
-        return;
-      }
+    onSuccess: async (newStudent, variable, { updatedStudents }) => {
+      refetch();
 
-      queryClient.setQueryData<StudentInterface[]>(['students'], updatedStudents);
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+
+      // await queryClient.cancelQueries({ queryKey: ['students'] });
+
+      // if (!updatedStudents) {
+      //   return;
+      // }
+
+      // queryClient.setQueryData<StudentInterface[]>(['students'], updatedStudents.map((student: StudentInterface) => ({
+      //   ...(student.uuid == newStudent.uuid ? newStudent : student),
+      // })));
      },
   });
 

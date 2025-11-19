@@ -19,16 +19,16 @@ export const metadata: Metadata = {
 };
 
 const RootLayout = async ({ children }: Readonly<{ children: React.ReactNode }>): Promise<React.ReactElement> => {
-  // выполняется на сервере - загрузка групп
-  await queryClient.prefetchQuery({
-    queryKey: ['groups'],
-    queryFn: getGroupsApi,
-  });
-
   // выполняется на сервере - загрузка студентов
   await queryClient.prefetchQuery({
     queryKey: ['students'],
     queryFn: getStudentsApi,
+  });
+
+  // выполняется на сервере - загрузка групп
+  await queryClient.prefetchQuery({
+    queryKey: ['groups'],
+    queryFn: getGroupsApi,
   });
 
   // дегидрация состояния

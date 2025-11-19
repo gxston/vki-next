@@ -19,7 +19,7 @@ export const getStudentsDb = async (): Promise<StudentInterface[]> => {
  * @param id id студента
  * @returns Promise<Student | null>
  */
-export const getStudentById = async (id: number): Promise<Student | null> => {
+export const getStudentByIdDb = async (id: number): Promise<Student | null> => {
   return await studentRepository.findOne({
     where: { id },
     relations: ['group'],

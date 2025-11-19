@@ -25,7 +25,7 @@ const useStudents = (): StudentsHookInterface => {
 
       let updatedStudents = [...(previousStudents ?? [])];
 
-      if (!updatedStudents) return;
+      //if (!updatedStudents) return;
 
       updatedStudents = updatedStudents.map((student: StudentInterface) => ({
         ...student,
@@ -33,13 +33,18 @@ const useStudents = (): StudentsHookInterface => {
       }));
       queryClient.setQueryData<StudentInterface[]>(['students'], updatedStudents);
 
+      debugger;
+
       return { previousStudents, updatedStudents };
     },
     onError: (err, variables, context) => {
       console.log('deleteStudentMutate err', err);
+      debugger;
       queryClient.setQueryData<StudentInterface[]>(['students'], context?.previousStudents);
     },
     onSuccess: async (studentId, variable, { previousStudents }) => {
+      debugger;
+
       await queryClient.cancelQueries({ queryKey: ['students'] });
 
       if (!previousStudents) {

@@ -1,24 +1,42 @@
 import type StudentInterface from '@/types/StudentInterface';
 import styles from './Student.module.scss';
+import Link from 'next/link';
 
 interface Props {
   student: StudentInterface;
-  onDelete: (id: number) => void;
 }
 
-const Student = ({ student, onDelete }: Props): React.ReactElement => {
-  const onDeleteHandler = (): void => {
-    onDelete(student.id);
-  };
+const Student = ({ student }: Props): React.ReactElement => (
+  <div className={`${styles.Student}`}>
+    <Link href="/students">
+      {'<< '}
+      список студентов
+    </Link>
 
-  const modifier = student.isDeleted ? '--isDeleted' : student.isNew ? '--isNew' : '';
+    <h1>{`${student.lastName} ${student.firstName} ${student.middleName}`}</h1>
 
-  return (
-    <div className={`${styles.Student} ${styles[modifier]}`}>
-      {`${student.id || 'xxxx'} - ${student.lastName} ${student.firstName} ${student.middleName} (${student?.group?.name})`}
-      <button onClick={onDeleteHandler}>Удалить</button>
+    <div className={styles.row}>
+      <div>ИД:</div>
+      <div>{student.id}</div>
     </div>
-  );
-};
+    <div className={styles.row}>
+      <div>Группа:</div>
+      <div>{student?.group?.name}</div>
+    </div>
+    <div className={styles.row}>
+      <div>Фамилия:</div>
+      <div>{student?.lastName}</div>
+    </div>
+    <div className={styles.row}>
+      <div>Имя:</div>
+      <div>{student?.firstName}</div>
+    </div>
+    <div className={styles.row}>
+      <div>Отчество:</div>
+      <div>{student?.middleName}</div>
+    </div>
+
+  </div>
+);
 
 export default Student;
